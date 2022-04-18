@@ -71,6 +71,20 @@ class PlaylistsService {
     }
   }
 
+  async getPlaylistById(playlistId) {
+    const query = {
+      text: 'SELECT playlists.id,playlists.name,users.username FROM playlists INNER JOIN users ON playlists.owner=users.id WHERE playlists.id = $1',
+      values: [playlistId],
+    };
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    return result.rows[0];
+  }
+
   async getSongsFromPlaylist(playlistId) {
     const query = {
       text: `SELECT songs.id, songs.title, songs.performer FROM songs
@@ -124,6 +138,19 @@ class PlaylistsService {
       } catch {
         throw error;
       }
+    }
+  }
+
+  async verifySongExist(songId) {
+    const query = {
+      text: 'SELECT * FROM songs WHERE id = $1',
+      values: [songId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Lagu tidak ditemukan');
     }
   }
 }
